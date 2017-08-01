@@ -43,5 +43,9 @@
     <li><a target="_blank"
            href="{{fromChangeValue()}}&fromchange={{resultset.revision}}" prevent-default-on-left-click
            ng-click="setLocationSearchParam('fromchange', resultset.revision)">Set as bottom of range</a></li>
+    <li><a target="_blank"
+           href=""
+           ng-hide="resultset.isCollapsed"
+           ng-click="collapsePush()">Collapse this push</a></li>
   </ul>
 </span>

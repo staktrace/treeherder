@@ -945,6 +945,13 @@ treeherder.directive('thCloneJobs', [
                 }
             });
 
+            // Collapse the push
+            $rootScope.$on(thEvents.collapsePush, function (ev, rs) {
+                if (scope.resultset.id === rs.id) {
+                    ThResultSetStore.collapsePush($rootScope.repoName, rs);
+                }
+            });
+
         };
         var addAdditionalJobParameters = function (groups) {
             groups.forEach(function (jobGroup) {

@@ -1256,6 +1256,10 @@ treeherder.factory('ThResultSetStore', [
             return groupedJobs;
         };
 
+        var collapsePush = function (repoName, resultSet) {
+            resultSet.isCollapsed = true;
+        };
+
         //Public interface
         var api = {
 
@@ -1286,7 +1290,8 @@ treeherder.factory('ThResultSetStore', [
             setSelectedJob: setSelectedJob,
             updateUnclassifiedFailureMap: updateUnclassifiedFailureMap,
             defaultResultSetCount: defaultResultSetCount,
-            reloadOnChangeParameters: reloadOnChangeParameters
+            reloadOnChangeParameters: reloadOnChangeParameters,
+            collapsePush: collapsePush,
 
         };
 

@@ -249,8 +249,9 @@ treeherder.provider('thEvents', function () {
 
             autoclassifyToggleExpandOptions: "ac-toggle-expand-options-EVT",
 
-            autoclassifyToggleEdit: "ac-toggle-edit-EVT"
+            autoclassifyToggleEdit: "ac-toggle-edit-EVT",
 
+            collapsePush: "collapse-push-EVT"
         };
     };
 });

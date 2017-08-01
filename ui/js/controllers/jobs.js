@@ -268,5 +268,10 @@ treeherderApp.controller('ResultSetCtrl', [
         $scope.authorResultsetFilterUrl = $scope.urlBasePath + "?repo=" +
             $scope.repoName + "&author=" +
             encodeURIComponent($scope.resultset.author);
+
+        $scope.collapsePush = function () {
+            $rootScope.$emit(thEvents.collapsePush, $scope.resultset);
+        };
+
     }
 ]);
