@@ -3,7 +3,8 @@ import datetime
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from treeherder.model.models import (Job,
+from treeherder.model.models import (FailureLine,
+                                     Job,
                                      JobGroup,
                                      JobType,
                                      Machine,
@@ -72,9 +73,12 @@ class Command(BaseCommand):
                                                     options['chunk_size'],
                                                     options['sleep_time'])
 
-        self.cycle_non_job_data(options['chunk_size'], options['sleep_time'])
+        self.cycle_non_job_data(
+            options['chunk_size'],
+            options['sleep_time'],
+            cycle_interval)
 
-    def cycle_non_job_data(self, chunk_size, sleep_time):
+    def cycle_non_job_data(self, chunk_size, sleep_time, cycle_interval):
         used_job_type_ids = Job.objects.values('job_type_id').distinct()
         JobType.objects.exclude(id__in=used_job_type_ids).delete()
 
@@ -83,6 +87,11 @@ class Command(BaseCommand):
 
         used_machine_ids = Job.objects.values('machine_id').distinct()
         Machine.objects.exclude(id__in=used_machine_ids).delete()
+
+        FailureLine.objects.filter(
+            created__lt=datetime.date.today() - cycle_interval
+            ).order_by('id')[:chunk_size].delete()
+
 
     def debug(self, msg):
         if self.is_debug:
