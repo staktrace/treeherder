@@ -24,6 +24,13 @@ class Command(BaseCommand):
             help='Write debug messages to stdout'
         )
         parser.add_argument(
+            '--skip-jobs',
+            action='store_true',
+            dest='skip_jobs',
+            default=False,
+            help='Skip cycling jobs and cycle only non-job data'
+        )
+        parser.add_argument(
             '--days',
             action='store',
             dest='days',
@@ -56,22 +63,23 @@ class Command(BaseCommand):
 
         self.debug("cycle interval... {}".format(cycle_interval))
 
-        for repository in Repository.objects.all():
-            self.debug("Cycling repository: {0}".format(repository.name))
-            rs_deleted = Job.objects.cycle_data(repository,
-                                                cycle_interval,
-                                                options['chunk_size'],
-                                                options['sleep_time'])
-            self.debug("Deleted {} jobs from {}".format(rs_deleted,
-                                                        repository.name))
-
-            # TODO: Fix the performance issues and re-enable:
-            # https://bugzilla.mozilla.org/show_bug.cgi?id=1346567#c10
-            if False and repository.expire_performance_data:
-                PerformanceDatum.objects.cycle_data(repository,
+        if not options['skip_jobs']:
+            for repository in Repository.objects.all():
+                self.debug("Cycling repository: {0}".format(repository.name))
+                rs_deleted = Job.objects.cycle_data(repository,
                                                     cycle_interval,
                                                     options['chunk_size'],
                                                     options['sleep_time'])
+                self.debug("Deleted {} jobs from {}".format(rs_deleted,
+                                                            repository.name))
+
+                # TODO: Fix the performance issues and re-enable:
+                # https://bugzilla.mozilla.org/show_bug.cgi?id=1346567#c10
+                if False and repository.expire_performance_data:
+                    PerformanceDatum.objects.cycle_data(repository,
+                                                        cycle_interval,
+                                                        options['chunk_size'],
+                                                        options['sleep_time'])
 
         self.cycle_non_job_data(
             options['chunk_size'],
