@@ -24,11 +24,11 @@ class Command(BaseCommand):
             help='Write debug messages to stdout'
         )
         parser.add_argument(
-            '--skip-jobs',
-            action='store_true',
-            dest='skip_jobs',
-            default=False,
-            help='Skip cycling jobs and cycle only non-job data'
+            '--target',
+            action='store',
+            dest='target',
+            default="all",
+            help='What to cycle: jobs, refdata, logdata.  Default: all'
         )
         parser.add_argument(
             '--days',
@@ -63,7 +63,7 @@ class Command(BaseCommand):
 
         self.debug("cycle interval... {}".format(cycle_interval))
 
-        if not options['skip_jobs']:
+        if options['target'] in ["all", "jobs"]:
             for repository in Repository.objects.all():
                 self.debug("Cycling repository: {0}".format(repository.name))
                 rs_deleted = Job.objects.cycle_data(repository,
@@ -81,21 +81,24 @@ class Command(BaseCommand):
                                                         options['chunk_size'],
                                                         options['sleep_time'])
 
-        self.cycle_expired_records(
-            options['chunk_size'],
-            cycle_interval)
+        if options['target'] in ["all", "logdata"]:
+            self.cycle_expired_log_records(
+                options['chunk_size'],
+                cycle_interval)
 
-        self.cycle_non_job_data(
-            options['chunk_size'],
-            options['sleep_time'],
-            cycle_interval)
+        if options['target'] in ["all", "refdata"]:
+            self.cycle_non_job_data(
+                options['chunk_size'],
+                options['sleep_time'],
+                cycle_interval)
 
-    def cycle_expired_records(self, chunk_size, cycle_interval):
+    def cycle_expired_log_records(self, chunk_size, cycle_interval):
         self.debug("delete expired FailureLines")
         old_fline_ids = list(FailureLine.objects.filter(
             created__lt=datetime.date.today() - cycle_interval
             ).order_by('id')[:chunk_size].values_list('id', flat=True))
-        self.debug("{} FailureLine records to be deleted".format(len(old_fline_ids)))
+        self.debug("{} FailureLine records to be deleted".format(
+            len(old_fline_ids)))
         FailureLine.objects.filter(id__in=old_fline_ids).delete()
 
     def cycle_non_job_data(self, chunk_size, sleep_time, cycle_interval):
@@ -110,7 +113,6 @@ class Command(BaseCommand):
         self.debug("delete unused Machine records")
         used_machine_ids = Job.objects.values('machine_id').distinct()
         Machine.objects.exclude(id__in=used_machine_ids).delete()
-
 
     def debug(self, msg):
         if self.is_debug:
