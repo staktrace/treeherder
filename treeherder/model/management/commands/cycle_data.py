@@ -95,6 +95,7 @@ class Command(BaseCommand):
         old_fline_ids = list(FailureLine.objects.filter(
             created__lt=datetime.date.today() - cycle_interval
             ).order_by('id')[:chunk_size].values_list('id', flat=True))
+        self.debug("{} FailureLine records to be deleted".format(len(old_fline_ids)))
         FailureLine.objects.filter(id__in=old_fline_ids).delete()
 
     def cycle_non_job_data(self, chunk_size, sleep_time, cycle_interval):
