@@ -87,6 +87,7 @@ class Command(BaseCommand):
             cycle_interval)
 
     def cycle_non_job_data(self, chunk_size, sleep_time, cycle_interval):
+        self.debug("cycle_non_job_data start")
         used_job_type_ids = Job.objects.values('job_type_id').distinct()
         JobType.objects.exclude(id__in=used_job_type_ids).delete()
 
@@ -96,6 +97,7 @@ class Command(BaseCommand):
         used_machine_ids = Job.objects.values('machine_id').distinct()
         Machine.objects.exclude(id__in=used_machine_ids).delete()
 
+        self.debug("delete failure_lines")
         old_flines = FailureLine.objects.filter(
             created__lt=datetime.date.today() - cycle_interval
             ).order_by('id')[:chunk_size]
