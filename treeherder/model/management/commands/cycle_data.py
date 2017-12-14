@@ -96,9 +96,12 @@ class Command(BaseCommand):
         used_machine_ids = Job.objects.values('machine_id').distinct()
         Machine.objects.exclude(id__in=used_machine_ids).delete()
 
-        FailureLine.objects.filter(
+        old_flines = FailureLine.objects.filter(
             created__lt=datetime.date.today() - cycle_interval
-            ).order_by('id')[:chunk_size].delete()
+            ).order_by('id')[:chunk_size]
+        self.debug("got old lines, deleting {}".format(old_flines.count()))
+        old_flines.delete()
+        self.debug("done deleting flines")
 
 
     def debug(self, msg):
