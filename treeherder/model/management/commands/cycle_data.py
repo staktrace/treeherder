@@ -94,9 +94,9 @@ class Command(BaseCommand):
         self.debug("cycle_expired_records start")
 
         self.debug("delete failure_lines")
-        old_fline_ids = FailureLine.objects.filter(
+        old_fline_ids = list(FailureLine.objects.filter(
             created__lt=datetime.date.today() - cycle_interval
-            )[:chunk_size].values_list('id', flat=True).order_by('id')
+            ).order_by('id')[:chunk_size].values_list('id', flat=True))
         self.debug("got old lines, deleting {}".format(len(old_fline_ids)))
 
         FailureLine.objects.filter(id__in=old_fline_ids).delete()
