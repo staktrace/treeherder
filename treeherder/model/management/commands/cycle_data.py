@@ -81,10 +81,25 @@ class Command(BaseCommand):
                                                         options['chunk_size'],
                                                         options['sleep_time'])
 
+        self.cycle_expired_records(
+            options['chunk_size'],
+            cycle_interval)
+
         self.cycle_non_job_data(
             options['chunk_size'],
             options['sleep_time'],
             cycle_interval)
+
+    def cycle_expired_records(self, chunk_size, cycle_interval):
+        self.debug("cycle_expired_records start")
+
+        self.debug("delete failure_lines")
+        old_flines = FailureLine.objects.filter(
+            created__lt=datetime.date.today() - cycle_interval
+            ).order_by('id')[:chunk_size]
+        self.debug("got old lines, deleting {}".format(old_flines.count()))
+        old_flines.delete()
+        self.debug("done deleting flines")
 
     def cycle_non_job_data(self, chunk_size, sleep_time, cycle_interval):
         self.debug("cycle_non_job_data start")
