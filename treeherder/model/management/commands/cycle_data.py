@@ -94,11 +94,12 @@ class Command(BaseCommand):
         self.debug("cycle_expired_records start")
 
         self.debug("delete failure_lines")
-        old_flines = FailureLine.objects.filter(
+        old_fline_ids = FailureLine.objects.filter(
             created__lt=datetime.date.today() - cycle_interval
-            ).order_by('id')[:chunk_size]
-        self.debug("got old lines, deleting {}".format(old_flines.count()))
-        old_flines.delete()
+            )[:chunk_size].values_list('id', flat=True).order_by('id')
+        self.debug("got old lines, deleting {}".format(len(old_fline_ids)))
+
+        FailureLine.objects.filter(id__in=old_fline_ids).delete()
         self.debug("done deleting flines")
 
     def cycle_non_job_data(self, chunk_size, sleep_time, cycle_interval):
@@ -111,14 +112,6 @@ class Command(BaseCommand):
 
         used_machine_ids = Job.objects.values('machine_id').distinct()
         Machine.objects.exclude(id__in=used_machine_ids).delete()
-
-        self.debug("delete failure_lines")
-        old_flines = FailureLine.objects.filter(
-            created__lt=datetime.date.today() - cycle_interval
-            ).order_by('id')[:chunk_size]
-        self.debug("got old lines, deleting {}".format(old_flines.count()))
-        old_flines.delete()
-        self.debug("done deleting flines")
 
 
     def debug(self, msg):
